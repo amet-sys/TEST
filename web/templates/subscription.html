@@ -1,0 +1,128 @@
+{{define "subscription"}}
+<div class="subscription-card">
+    <div class="card-header">
+        <h3 class="service-name">{{.S.ServiceName}}</h3>
+        <span class="price-badge">{{.S.Price}} ₽</span>
+    </div>
+    
+    <div class="card-body">
+        <div class="info-row">
+            <span class="info-label">ID:</span>
+            <span class="info-value">{{.S.ID}}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">Пользователь:</span>
+            <span class="info-value">{{.S.User_ID}}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">Начало подписки:</span>
+            <span class="info-value">{{.S.StartDate}}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Окончание подписки:</span>
+            <span class="info-value">{{.S.EndTime}}</span>
+        </div>
+    </div>
+    
+    <div class="card-footer">
+        <span class="status-active">Активна</span>
+    </div>
+</div>
+
+
+<style>
+.subscription-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin: 10px;
+    max-width: 320px;
+}
+
+.subscription-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    color: white;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.service-name {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.price-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.card-body {
+    padding: 16px;
+}
+
+.info-row {
+    display: flex;
+    margin-bottom: 12px;
+    align-items: baseline;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #555;
+    min-width: 120px;
+    font-size: 0.9rem;
+}
+
+.info-value {
+    color: #333;
+    word-break: break-word;
+}
+
+.card-footer {
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+    text-align: right;
+}
+
+.status-active {
+    background: #2ecc71;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+    .subscription-card {
+        max-width: 100%;
+    }
+    
+    .info-row {
+        flex-direction: column;
+    }
+    
+    .info-label {
+        margin-bottom: 4px;
+    }
+}
+</style>
+{{end}}

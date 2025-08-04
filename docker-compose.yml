@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: Junior
+      POSTGRES_PASSWORD: JuniorHello
+      POSTGRES_DB: subscriptions
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U Junior -d subscriptions"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  go-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - secrets.env  # Загружает переменные в окружение контейнера
+    environment:
+      DB_URL: "postgres://Junior:JuniorHello@postgres:5432/subscriptions?sslmode=disable"
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

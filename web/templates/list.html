@@ -1,0 +1,338 @@
+{{define "list"}}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление подписками</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .add-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .add-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .subscriptions-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .subscription-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .subscription-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .subscription-card p {
+            margin: 8px 0;
+            color: #555;
+        }
+        
+        .subscription-card p:first-child {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        
+        /* Стили для модального окна */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 8px;
+            width: 50%;
+            max-width: 500px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .submit-btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        
+        .submit-btn:hover {
+            background-color: #27ae60;
+        }
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        .edit-btn {
+            background-color: #3498db;  /* Синий цвет */
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 10px;
+            margin-right: 8px;  /* Отступ от других кнопок */
+            transition: background-color 0.3s ease;
+        }
+
+        .edit-btn:hover {
+            background-color: #2980b9;  /* Темно-синий при наведении */
+        }
+        a, a:active, a:focus {
+            color:white;
+            outline: none;
+            text-decoration: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Подписки</h1>
+        <button class="add-btn" onclick="openModal()">+ Добавить подписку</button>
+    </div>
+    
+    <div class="subscriptions-container">
+        {{if .subs}}
+            {{range .subs}}
+                <div class="subscription-card">
+                    <p>{{.ServiceName}}</p>
+                    <p><strong>ID:</strong> {{.ID}}</p>
+                    <p><strong>Цена:</strong> {{.Price}} ₽</p>
+                    <p><strong>Пользователь:</strong> {{.User_ID}}</p>
+                    <p><strong>Начало:</strong> {{.StartDate}}</p>
+                    <p><strong>Окончание:</strong> {{.EndTime}}</p>
+                    <button class="edit-btn"><a href="/subscription/{{.ID}}">Подробнее</a></button>
+                    <button onclick="deleteSubscription('{{.ID}}')" class="delete-btn">
+                        Удалить
+                    </button>
+                    <button onclick="openEditModal('{{.ID}}', '{{.ServiceName}}', '{{.Price}}', '{{.User_ID}}', '{{.StartDate}}', '{{.EndTime}}')" class="edit-btn">
+                        Изменить
+                    </button>
+                </div>
+            {{end}}
+        {{else}}
+            <p>Подписок ещё нет</p>
+        {{end}}
+    </div>
+
+   
+    <div id="editModal" class="modal">
+        <div class="modal-content" id="editModalContent">
+            <!-- Содержимое будет заполнено динамически -->
+        </div>
+    </div>
+ <!-- Модальное окно для создания -->
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            {{template "creating" .}}
+        </div>
+    </div>
+    
+
+    <script>
+        function openModal() {
+            document.getElementById('createModal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('createModal').style.display = 'none';
+        }
+        
+        // Закрытие при клике вне модального окна
+        window.onclick = function(event) {
+            const modal = document.getElementById('createModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        function deleteSubscription(id) {
+                fetch(`/delete-subscription/${id}`, {
+                    method: 'DELETE',
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload(); // Перезагрузить страницу после удаления
+                    } else {
+                        alert('Ошибка удаления');
+                    }
+                });
+            
+        }
+        
+        function openEditModal(id, serviceName, price, userId, startDate, EndTime) {
+            const modalContent = `
+                <span class="close" onclick="closeEditModal()">&times;</span>
+                <h2>Редактирование подписки</h2>
+                <form id="editForm">
+                    <input type="hidden" name="id" value="${id}">
+                    
+                    <div class="form-group">
+                        <label for="editServiceName">Название сервиса:</label>
+                        <input type="text" id="editServiceName" name="service_name" value="${serviceName}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editPrice">Цена (₽):</label>
+                        <input type="number" id="editPrice" name="price" value="${price}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editUserId">ID пользователя:</label>
+                        <input type="text" id="editUserId" name="user_id" value="${userId}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editStartDate">Дата начала:</label>
+                        <input type="text" id="editStartDate" name="start_date" value="${startDate}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editStartDate">Дата окончания:</label>
+                        <input type="text" id="editEndTime" name="end_date" value="${EndTime}" required>
+                    </div>
+                    
+                    <button type="button" onclick="submitEditForm('${id}')" class="submit-btn">Сохранить</button>
+                </form>
+            `;
+            
+            document.getElementById('editModalContent').innerHTML = modalContent;
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function submitEditForm(subId) {
+            // Получаем текущую дату в формате YYYY-MM-DD для EndTime
+            const today = new Date().toISOString().split('T')[0];
+            
+            const formData = {
+                service_name: document.getElementById('editServiceName').value,
+                price: parseInt(document.getElementById('editPrice').value),
+                user_id: document.getElementById('editUserId').value,
+                start_date: document.getElementById('editStartDate').value,
+                end_time: document.getElementById('editEndTime').value,
+            };
+
+            console.log('Отправляемые данные:', formData);
+
+            fetch(`/update-subscription/${subId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+        if (!response.ok) {
+                throw new Error('Ошибка сервера: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Успешный ответ:', data);
+            closeEditModal();
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            alert('Произошла ошибка: ' + error.message);
+        });
+        }
+    </script>
+</body>
+</html>
+{{end}}

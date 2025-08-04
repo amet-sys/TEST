@@ -1,0 +1,151 @@
+{{define "subscription_sum_form"}}
+<div class="sum-container">
+    <h2>Расчет стоимости подписок</h2>
+    <form id="sumForm" class="sum-form">
+        <div class="form-group">
+            <label for="startDate">Начало периода:</label>
+            <input id="startDate" name="start_date" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="endDate">Конец периода:</label>
+            <input  id="endDate" name="end_date" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="userId">ID пользователя (опционально):</label>
+            <input type="text" id="userId" name="user_id" placeholder="Введите UUID пользователя">
+        </div>
+        
+        <div class="form-group">
+            <label for="serviceName">Название подписки (опционально):</label>
+            <input type="text" id="serviceName" name="service_name" placeholder="Например: Netflix">
+        </div>
+        
+        <button type="submit" class="submit-btn">Рассчитать сумму</button>
+    </form>
+    
+    <div id="resultContainer" class="result-container" style="display: none;">
+        <h3>Результат:</h3>
+        <div class="result-card">
+            <p><strong>Общая стоимость:</strong> <span id="totalSum">0</span> ₽</p>
+            <p><strong>Период:</strong> <span id="periodRange"></span></p>
+            <p><strong>Критерии:</strong> <span id="criteria"></span></p>
+        </div>
+    </div>
+</div>
+
+<style>
+.sum-container {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.sum-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.submit-btn {
+    background: #4361ee;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.submit-btn:hover {
+    background: #3a0ca3;
+}
+
+.result-container {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.result-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.result-card p {
+    margin: 8px 0;
+    color: #333;
+}
+
+.result-card strong {
+    color: #2c3e50;
+}
+</style>
+
+<script>
+document.getElementById('sumForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        start_date: document.getElementById('startDate').value,
+        end_date: document.getElementById('endDate').value,
+        user_id: document.getElementById('userId').value,
+        service_name: document.getElementById('serviceName').value
+    };
+    
+    // Формируем URL с query параметрами
+    const params = new URLSearchParams();
+    for (const key in formData) {
+        if (formData[key]) {
+            params.append(key, formData[key]);
+        }
+    }
+    
+    fetch(`/subscriptions/total?${params.toString()}`)
+        .then(response => response.json())
+        .then(data => {
+            // Отображаем результаты
+            document.getElementById('totalSum').textContent = data.total;
+            document.getElementById('periodRange').textContent = data.period;
+            
+            let criteria = [];
+            if (data.user_id) criteria.push(`Пользователь: ${data.user_id}`);
+            if (data.service) criteria.push(`Сервис: ${data.service}`);
+            document.getElementById('criteria').textContent = 
+                criteria.length > 0 ? criteria.join(', ') : 'Все подписки';
+            
+            document.getElementById('resultContainer').style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при расчете суммы: ' + error.message);
+        });
+});
+</script>
+{{end}}
